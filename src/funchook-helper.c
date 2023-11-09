@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
 #include <dlfcn.h>
@@ -11,6 +12,8 @@
 
 FHH_PRIVATE
 bool fhh_uninstall(fhh_hook_state_t* hook) {
+  int rv;
+
   if (hook == NULL) {
     return false;
   }
@@ -19,11 +22,22 @@ bool fhh_uninstall(fhh_hook_state_t* hook) {
     return false;
   }
 
-  // Ignore failures because the original function might've been
+  rv = funchook_uninstall(hook->funchook_handle, 0);
+  // Ignore memory failures because the original function might've been
   // unmapped from memory.
-  (void)funchook_uninstall(hook->funchook_handle, 0);
+  if (rv == FUNCHOOK_ERROR_MEMORY_FUNCTION) {
+    // XXX: funchook_destroy complains unless we successfully uninstall the hook
+    // This is ugly as sin. Sorry...
+    int* installed = (int*)hook->funchook_handle;
+    *installed = 0;
+  } else if (rv != FUNCHOOK_ERROR_SUCCESS) {
+    fprintf(stderr, "fhh_helper: funchook_uninstall failed (%d)\n", rv);
+  }
 
-  assert(funchook_destroy(hook->funchook_handle) == FUNCHOOK_ERROR_SUCCESS);
+  rv = funchook_destroy(hook->funchook_handle);
+  if (rv != FUNCHOOK_ERROR_SUCCESS) {
+    fprintf(stderr, "fhh_helper: funchook_destroy failed (%d)\n", rv);
+  }
 
   hook->funchook_handle = NULL;
   hook->original_func = NULL;
@@ -40,6 +54,10 @@ bool fhh_install(
 ) {
   int rv;
   funchook_t* funchook = NULL;
+
+  // Make sure we don't attempt to install the hook twice
+  assert(hook_state->original_func == NULL);
+
   void* sym = dlsym(dl_handle, name);
 
   if (sym == NULL) {
@@ -50,9 +68,6 @@ bool fhh_install(
   if (hook_state->original_func_hooked == sym) {
     goto fail;
   }
-
-  // Make sure we're not hooking symbols from different libs
-  assert(hook_state->original_func == NULL);
 
   hook_state->original_func = sym;
   hook_state->original_func_hooked = sym;
