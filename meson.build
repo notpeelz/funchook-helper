@@ -9,6 +9,7 @@ project(
 )
 
 add_project_arguments([
+  '-D_GNU_SOURCE',
   '-Wno-pedantic',
   '-Wno-error=unused-function',
   '-Wno-error=unused-parameter',
@@ -50,7 +51,6 @@ funchook_helper_lib = static_library(
   'src/funchook-helper.c',
   include_directories: funchook_helper_inc,
   dependencies: funchook_helper_deps,
-  c_args: c_args,
 )
 
 funchook_helper_dep = declare_dependency(
