@@ -24,12 +24,12 @@ add_project_arguments([
 
 cmake = import('cmake')
 
-funchook_opt = cmake.subproject_options()
-funchook_opt.add_cmake_defines({
+opts = cmake.subproject_options()
+opts.add_cmake_defines({
   'CMAKE_POSITION_INDEPENDENT_CODE': true,
 })
-funchook_opt.set_install(false)
-funchook_opt.append_compile_args(
+opts.set_install(false)
+opts.append_compile_args(
   'c',
   '-Wno-pedantic',
   '-Wno-unused-function',
@@ -38,23 +38,9 @@ funchook_opt.append_compile_args(
   '-Wno-sign-compare',
   '-Wno-strict-aliasing',
 )
-funchook = cmake.subproject('funchook', options: funchook_opt)
-funchook_dep = funchook.dependency('funchook-static')
+funchook = cmake.subproject('funchook', options: opts)
 
-dl_dep = dependency('dl', include_type: 'system')
+DEP_FUNCHOOK = funchook.dependency('funchook-static')
+DEP_DL = dependency('dl', include_type: 'system')
 
-funchook_helper_inc = include_directories('src/include')
-funchook_helper_deps = [dl_dep, funchook_dep]
-
-funchook_helper_lib = static_library(
-  meson.project_name(),
-  'src/funchook-helper.c',
-  include_directories: funchook_helper_inc,
-  dependencies: funchook_helper_deps,
-)
-
-funchook_helper_dep = declare_dependency(
-  link_with: funchook_helper_lib,
-  include_directories: funchook_helper_inc,
-  dependencies: funchook_helper_deps,
-)
+subdir('src')
