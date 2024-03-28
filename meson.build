@@ -10,7 +10,6 @@ project(
 
 add_project_arguments([
   '-Wno-pedantic',
-  '-Werror',
   '-Wno-error=unused-function',
   '-Wno-error=unused-parameter',
   '-Wno-error=unused-but-set-parameter',
@@ -31,7 +30,6 @@ funchook_opt.add_cmake_defines({
 funchook_opt.set_install(false)
 funchook_opt.append_compile_args(
   'c',
-  '-Werror',
   '-Wno-pedantic',
   '-Wno-unused-function',
   '-Wno-unused-parameter',
