@@ -8,11 +8,7 @@ project(
   ],
 )
 
-files = [
-  'src/funchook-helper.c',
-]
-
-c_args = [
+add_project_arguments([
   '-Wno-pedantic',
   '-Werror',
   '-Wno-error=unused-function',
@@ -24,7 +20,7 @@ c_args = [
   '-Wno-error=unused-label',
   '-Wno-error=unused-const-variable',
   '-Wno-error=unused-result',
-]
+], language: 'c')
 
 cmake = import('cmake')
 
@@ -53,7 +49,7 @@ funchook_helper_deps = [dl_dep, funchook_dep]
 
 funchook_helper_lib = static_library(
   meson.project_name(),
-  files,
+  'src/funchook-helper.c',
   include_directories: funchook_helper_inc,
   dependencies: funchook_helper_deps,
   c_args: c_args,
